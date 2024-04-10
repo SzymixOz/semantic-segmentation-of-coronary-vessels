@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib import patches as mpatches
 from IPython.display import clear_output
 
+
 def unpack_mask(mask, shape=(512, 512)):
     """Unpack segmentation mask sent in HTTP request.
     Args:
@@ -25,6 +26,7 @@ def unpack_mask(mask, shape=(512, 512)):
     mask = mask.squeeze()
     return mask
 
+
 def pop_row(df):
     '''Pops the first row of the dataframe and returns both the row and the resulting dataframe.
     Args:
@@ -40,7 +42,9 @@ def pop_row(df):
     popped_row = popped_row.transpose()
     return popped_row, df
 
-def merge_masks(dataframe, weights={'lekandnow@gmail.com': 1, 'sgurba@gmail.com': 1, 'zamiedzaidalej@gmail.com': 0.7, 'pio.smietanski@gmail.com': 0.7}):
+
+def merge_masks(dataframe, weights={'lekandnow@gmail.com': 1, 'sgurba@gmail.com': 1, 'zamiedzaidalej@gmail.com': 0.7,
+                                    'pio.smietanski@gmail.com': 0.7}):
     '''Merges all segmentations from a view of a dataframe using majority voting.
     Args:
         dataframe (pd.dataframe): Pandas dataframe with mandatory columns: user, segmentation
@@ -63,14 +67,15 @@ def merge_masks(dataframe, weights={'lekandnow@gmail.com': 1, 'sgurba@gmail.com'
         if row['user'] in list(weights):
             nr_masks += 1
             # mask_1 *= weights[row['user']]
-            mask_1 = mask_1 * weights[row['user']] + (1 - mask_1) * (1 - weights[row['user']]) # should be more correct
+            mask_1 = mask_1 * weights[row['user']] + (1 - mask_1) * (1 - weights[row['user']])  # should be more correct
             np.add(mask, mask_1, out=mask)
-            
+
     nr_masks = float(nr_masks)
     mask /= nr_masks
     # make round for mask values becasue we want 0 or 1
     mask = np.where(mask >= 0.5, 1.0, 0.0)
     return mask
+
 
 def get_data(data, voting, images_path):
     '''Given dataframe of segmentation data and local folder of images, returns array of images and segmentations each
@@ -87,13 +92,14 @@ def get_data(data, voting, images_path):
     filenames = []
 
     for filename in os.listdir(images_path):
-        filenames.append(filename)
+        filenames.append(filename.split(".")[0])
         split = filename.index('_')
         image_id = filename[0:split]
-        frame = filename[split+1:-4]
+        frame = filename[split + 1:-4]
 
         if voting == False:
-            segmentation = data.loc[(data['image_id'] == image_id) & (data['frame'] == int(frame))].sample().iloc[0]['segmentation'] 
+            segmentation = data.loc[(data['image_id'] == image_id) & (data['frame'] == int(frame))].sample().iloc[0][
+                'segmentation']
             segmentation = unpack_mask(segmentation)
             segmentations.append(segmentation)
             images.append(np.array(Image.open(f'{images_path}/{filename}')))
@@ -106,11 +112,15 @@ def get_data(data, voting, images_path):
                 images.append(np.array(Image.open(f'{images_path}/{filename}')))
     return (images, segmentations, filenames)
 
+
 def color_segments(mask):
-    segment_colors = {0:[0, 0, 0], 1:[102, 0, 0], 2:[0, 255, 0], 3:[0, 204, 204], 4:[204, 0, 102], 5:[204, 204, 0], 6:[76, 153, 0], 7:[204, 0, 0], 8:[0, 128, 255], 9:[0, 102, 51], 10:[178, 255, 102], 11:[0, 102, 102], 12:[255, 102, 102], 13:[0, 51, 102], 14:[51, 255, 153], 15:[153, 51, 255], 99:[255,255,255], 255:[255, 255, 255]}
+    segment_colors = {0: [0, 0, 0], 1: [102, 0, 0], 2: [0, 255, 0], 3: [0, 204, 204], 4: [204, 0, 102],
+                      5: [204, 204, 0], 6: [76, 153, 0], 7: [204, 0, 0], 8: [0, 128, 255], 9: [0, 102, 51],
+                      10: [178, 255, 102], 11: [0, 102, 102], 12: [255, 102, 102], 13: [0, 51, 102], 14: [51, 255, 153],
+                      15: [153, 51, 255], 99: [255, 255, 255], 255: [255, 255, 255]}
     if mask.shape != (512, 512):
         raise Exception("Invalid mask size")
-    colored_mask = np.empty((512,512,3), dtype=np.float32)
+    colored_mask = np.empty((512, 512, 3), dtype=np.float32)
 
     it = np.nditer(mask, flags=['multi_index'])
     for pixel in it:
@@ -118,10 +128,11 @@ def color_segments(mask):
             color = 99
         else:
             color = pixel.item()
-        for channel in range(0,3):
+        for channel in range(0, 3):
             colored_mask[it.multi_index[0], it.multi_index[1], channel] = float(segment_colors[color][channel])
-    
+
     return colored_mask
+
 
 def get_mask(img, mask, binary=False, name=None, folder_name='image', img_intensity=0.005, mask_intensity=-0.003):
     """Show segmentation mask on top of original image.
@@ -132,14 +143,21 @@ def get_mask(img, mask, binary=False, name=None, folder_name='image', img_intens
         mask_intensity (float, optional): Mask opacity parameter. Defaults to -0.003.
         img_intensity (float, optional): Image opacity parameter. Defaults to 0.005.
     """
-    segment_names = {1:"RCA proximal", 2:"RCA mid", 3:"RCA distal", 4:"Posterior descending artery", 5:"Left main", 6:"LAD proximal", 7:"LAD mid", 8:"LAD aplical", 9:"First diagonal", 10:"Second diagonal", 11:"Proximal circumflex artery", 12:"Intermediate/anterolateral artery", 13:"Distal circumflex artery", 14:"Left posterolateral", 15:"Posterior descending", 99:"Unknown"}
-    segment_colors = {0:[0, 0, 0], 1:[102, 0, 0], 2:[0, 255, 0], 3:[0, 204, 204], 4:[204, 0, 102], 5:[204, 204, 0], 6:[76, 153, 0], 7:[204, 0, 0], 8:[0, 128, 255], 9:[0, 102, 51], 10:[178, 255, 102], 11:[0, 102, 102], 12:[255, 102, 102], 13:[0, 51, 102], 14:[51, 255, 153], 15:[153, 51, 255], 99:[255,255,255], 255:[255, 255, 255]}
-    
+    segment_names = {1: "RCA proximal", 2: "RCA mid", 3: "RCA distal", 4: "Posterior descending artery", 5: "Left main",
+                     6: "LAD proximal", 7: "LAD mid", 8: "LAD aplical", 9: "First diagonal", 10: "Second diagonal",
+                     11: "Proximal circumflex artery", 12: "Intermediate/anterolateral artery",
+                     13: "Distal circumflex artery", 14: "Left posterolateral", 15: "Posterior descending",
+                     99: "Unknown"}
+    segment_colors = {0: [0, 0, 0], 1: [102, 0, 0], 2: [0, 255, 0], 3: [0, 204, 204], 4: [204, 0, 102],
+                      5: [204, 204, 0], 6: [76, 153, 0], 7: [204, 0, 0], 8: [0, 128, 255], 9: [0, 102, 51],
+                      10: [178, 255, 102], 11: [0, 102, 102], 12: [255, 102, 102], 13: [0, 51, 102], 14: [51, 255, 153],
+                      15: [153, 51, 255], 99: [255, 255, 255], 255: [255, 255, 255]}
+
     img_color = np.copy(img)
     img_color = cv2.cvtColor(img_color, cv2.COLOR_GRAY2RGB)
     img_color = img_color.astype(np.float32)
 
-    if binary==True:
+    if binary == True:
         # mask = mask > 0.5
         mask_color = cv2.cvtColor(mask.astype(np.float32), cv2.COLOR_GRAY2RGB)
         mask_color[:, :, 1] = 0
@@ -153,10 +171,10 @@ def get_mask(img, mask, binary=False, name=None, folder_name='image', img_intens
         segments = np.unique(mask).tolist()[1:]
         handles = []
         for segment in segments:
-            if segment not in segment_colors.keys():
+            if segment not in segment_names.keys():
                 continue
             c = segment_colors[segment]
-            color = [x/255 for x in c]
+            color = [x / 255 for x in c]
             color = tuple(color)
             handles.append(mpatches.Patch(color=color, label=segment_names[segment]))
             # print(f'segment:{segment}\ncolor:{color}\nname:{segment_names[segment]}')
@@ -170,10 +188,10 @@ def get_mask(img, mask, binary=False, name=None, folder_name='image', img_intens
     # plt.legend(handles=handles, loc='upper right')
     plt.axis('off')
     if name is not None:
-        plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
-                    hspace = 0, wspace = 0)
-        plt.margins(0,0)
-        plt.savefig(f'./{folder_name}/{name}.png', bbox_inches='tight', pad_inches=0, transparent=False,dpi=80)
+        plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
+                            hspace=0, wspace=0)
+        plt.margins(0, 0)
+        plt.savefig(f'./{folder_name}/{name}.png', bbox_inches='tight', pad_inches=0, transparent=False, dpi=80)
 
         # Other solution
         # if np.isnan(result).any():
@@ -197,3 +215,15 @@ def get_mask(img, mask, binary=False, name=None, folder_name='image', img_intens
         # # Save the image
         # pil_img.save(f'./images/{name}.png')
     return result
+
+
+if __name__ == "__main__":
+    data = pd.read_csv('data.csv')
+    images, segmentations, filenames = get_data(data, voting=True, images_path='./students_images')
+    for i, (image, seg, filename) in enumerate(zip(images, segmentations, filenames)):
+        get_mask(image, seg, name=filename, folder_name='images_merge_mask', binary=True)
+
+    data = pd.read_csv('data.csv')
+    images2, segmentations2, filenames2 = get_data(data, voting=False, images_path='./students_images')
+    for i, (image, seg, filename) in enumerate(zip(images2, segmentations2, filenames2)):
+        get_mask(image, seg, name=filename, folder_name='images_first_mask', binary=False)
