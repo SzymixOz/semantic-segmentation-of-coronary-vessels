@@ -84,8 +84,10 @@ def get_data(data, voting, images_path):
     '''
     images = []
     segmentations = []
+    filenames = []
 
     for filename in os.listdir(images_path):
+        filenames.append(filename)
         split = filename.index('_')
         image_id = filename[0:split]
         frame = filename[split+1:-4]
@@ -102,7 +104,7 @@ def get_data(data, voting, images_path):
                 mask = merge_masks(seg_df)
                 segmentations.append(mask)
                 images.append(np.array(Image.open(f'{images_path}/{filename}')))
-    return (images, segmentations)
+    return (images, segmentations, filenames)
 
 def color_segments(mask):
     segment_colors = {0:[0, 0, 0], 1:[102, 0, 0], 2:[0, 255, 0], 3:[0, 204, 204], 4:[204, 0, 102], 5:[204, 204, 0], 6:[76, 153, 0], 7:[204, 0, 0], 8:[0, 128, 255], 9:[0, 102, 51], 10:[178, 255, 102], 11:[0, 102, 102], 12:[255, 102, 102], 13:[0, 51, 102], 14:[51, 255, 153], 15:[153, 51, 255], 99:[255,255,255], 255:[255, 255, 255]}
@@ -121,7 +123,7 @@ def color_segments(mask):
     
     return colored_mask
 
-def get_mask(img, mask, binary=False, name=None, img_intensity=0.005, mask_intensity=-0.003):
+def get_mask(img, mask, binary=False, name=None, folder_name='image', img_intensity=0.005, mask_intensity=-0.003):
     """Show segmentation mask on top of original image.
 
     Args:
@@ -171,7 +173,7 @@ def get_mask(img, mask, binary=False, name=None, img_intensity=0.005, mask_inten
         plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
                     hspace = 0, wspace = 0)
         plt.margins(0,0)
-        plt.savefig(f'./images/{name}.png', bbox_inches='tight', pad_inches=0, transparent=False,dpi=80)
+        plt.savefig(f'./{folder_name}/{name}.png', bbox_inches='tight', pad_inches=0, transparent=False,dpi=80)
 
         # Other solution
         # if np.isnan(result).any():
