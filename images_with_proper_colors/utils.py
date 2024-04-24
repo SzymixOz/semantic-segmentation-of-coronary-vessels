@@ -55,7 +55,7 @@ def merge_masks(dataframe, weights={'lekandnow@gmail.com': 1, 'sgurba@gmail.com'
     '''
     nr_masks = 1
     row, df = pop_row(dataframe)
-    while row['user'] not in list(weights) and not df.empty:
+    while row['CREATEDBY'] not in list(weights) and not df.empty:
         row, df = pop_row(df)
     mask = unpack_mask(row['segmentation'])
     mask = np.where(mask >= 1, 1.0, 0.0)  # convert to binary mask
@@ -65,14 +65,15 @@ def merge_masks(dataframe, weights={'lekandnow@gmail.com': 1, 'sgurba@gmail.com'
         row, df = pop_row(df)
         mask_1 = unpack_mask(row['segmentation'])
         mask_1 = np.where(mask_1 >= 1, 1.0, 0.0)  # convert to binary mask
-        if row['user'] in list(weights):
+        if row['CREATEDBY'] in list(weights):
             nr_masks += 1
-            # mask_1 *= weights[row['user']]
-            mask_1 = mask_1 * weights[row['user']] + (1 - mask_1) * (1 - weights[row['user']])  # should be more correct
+            # mask_1 *= weights[row['CREATEDBY']]
+            mask_1 = mask_1 * weights[row['CREATEDBY']] + (1 - mask_1) * (1 - weights[row['CREATEDBY']])  # should be more correct
             np.add(mask, mask_1, out=mask)
 
     nr_masks = float(nr_masks)
     mask /= nr_masks
+    # print(np.unique(mask))
     # make round for mask values becasue we want 0 or 1
     mask = np.where(mask >= 0.5, 1.0, 0.0)
     return mask
@@ -93,6 +94,7 @@ def get_data(data, voting, images_path):
     filenames = []
     labels = []
 
+    print("GETTING DATA...")
     for filename in os.listdir(images_path):
         filenames.append(filename.split(".")[0])
 
@@ -148,7 +150,7 @@ def color_segments(mask, label, segment_colors):
     return colored_mask
 
 
-def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img_intensity=0.005, mask_intensity=-0.003):
+def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img_intensity=0.005, mask_intensity=-0.003, ground_truth=False):
     """Show segmentation mask on top of original image.
 
     Args:
@@ -162,6 +164,8 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
     #                  11: "Proximal circumflex artery", 12: "Intermediate/anterolateral artery",
     #                  13: "Distal circumflex artery", 14: "Left posterolateral", 15: "Posterior descending",
     #                  99: "Unknown"}
+    # print np unique mask
+    print(np.unique(mask))
     segment_namess={
         '1': "RCA proximal",
         '2': "RCA mid",
@@ -190,35 +194,40 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
         '16c': "Posterolateral branch from RCA, third",
     }
     segment_colors = {
-        0: [0, 0, 0], 
-        '1': [102, 0, 0],
-        '2': [0, 255, 0],
-        '3': [0, 204, 204],
-        '4': [204, 0, 102],
-        '5': [204, 204, 0],
-        '6': [76, 153, 0],
-        '7': [204, 0, 0],
-        '8': [0, 128, 255],
-        '9': [0, 102, 51],
-        '9a':  [0, 102, 102],
-        '10': [178, 255, 102], 
-        '10a': [178, 255, 202],
-        '11': [0, 102, 102],
-        '12': [255, 102, 102],
-        '12a':[255, 202, 102],
-        '12b': [255, 102, 202],
-        '13': [0, 51, 102],
-        '14': [51, 255, 153],
-        '14a':[51, 155, 153],
-        '14b':[51, 255, 53],
-        '15': [153, 51, 255], 
-        '16':  [255, 255, 0],
-        '16a': [153, 251, 255],
-        '16b':  [100, 100, 100],
-        '16c':  [200, 200, 200],
-        '99': [255, 255, 255], 
-        22: [255, 255, 0],
-        255: [255, 255, 255]
+        0: [0, 0, 0], # black
+        '1': [102, 0, 0], # dark red
+        '2': [0, 255, 0], # green
+        '3': [0, 204, 204], # light blue
+        '4': [204, 0, 102], # pink
+        # change color for dark brown
+        # '5': [204, 102, 0], # dark brown
+
+
+
+        '5': [204, 204, 0], # yellow
+        '6': [76, 153, 0], # dark green
+        '7': [204, 0, 0], # red
+        '8': [0, 128, 255], # blue
+        '9': [0, 102, 51], # dark green
+        '9a':  [0, 102, 102], # light blue
+        '10': [178, 255, 102], # light green
+        '10a': [178, 255, 202], # light green
+        '11': [0, 102, 102], # light blue
+        '12': [255, 102, 102], # light red
+        '12a':[255, 202, 102], # light red
+        '12b': [255, 102, 202], # light red
+        '13': [0, 51, 102], # dark blue
+        '14': [51, 255, 153], # light green
+        '14a':[51, 155, 153], # light green
+        '14b':[51, 255, 53], # light green
+        '15': [153, 51, 255],  # light purple
+        '16':  [255, 255, 0], # yellow
+        '16a': [153, 251, 255], # light blue
+        '16b':  [100, 100, 100], # grey
+        '16c':  [200, 200, 200], # grey
+        '99': [255, 255, 255],  # white
+        22: [255, 255, 0], # yellow
+        255: [255, 255, 255] # white
     }
 
     img_color = np.copy(img)
@@ -235,7 +244,9 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
     else:
         mask_color = color_segments(mask, label, segment_colors)
 
-    result = cv2.addWeighted(mask_color, mask_intensity, img_color, img_intensity, 0, img_color)
+    result = mask_color / 255.0 if ground_truth else cv2.addWeighted(mask_color, mask_intensity, img_color, img_intensity, 0, img_color)
+    #result = cv2.addWeighted(mask_color, mask_intensity, img_color, img_intensity, 0, img_color)
+    print(np.unique(mask_color))
     if not np.unique(mask).shape[0] < 3:
         segments = np.unique(mask).tolist()[1:]
         print(segments)
@@ -293,6 +304,8 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
 if __name__ == "__main__":
 
     data = pd.read_csv('segmentation_modified.csv', sep=';')
-    images2, segmentations2, filenames2, labels2 = get_data(data, voting=False, images_path='./images')
-    for i, (image, seg, filename, label) in enumerate(zip(images2, segmentations2, filenames2, labels2)):
-        get_mask(image, seg, label, name=filename, folder_name='segmentation_mask_2', binary=False)
+    images2, segmentations2, filenames2, labels2 = get_data(data, voting=True, images_path='./images')
+    # for i, (image, seg, filename, label) in enumerate(zip(images2, segmentations2, filenames2, labels2)):
+    #     # get_mask(image, seg, label, name=filename, folder_name='segmentation_mask_2', binary=False)
+    #     get_mask(image, seg, label, name=filename, folder_name='../keypoints/ground_truth', binary=False, ground_truth=True)
+    #     break
