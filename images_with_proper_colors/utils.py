@@ -146,7 +146,7 @@ def color_segments(mask, label, segment_colors):
         if pixel.item() not in segment_colors.keys() and label.get(pixel.item()) not in segment_colors.keys():
             color = '14'
         else:
-            color =  label.get(pixel.item()) if label.get(pixel.item()) is not None else 0  # change to string i think #TODO
+            color =  label.get(pixel.item()) if label.get(pixel.item()) is not None else '0'
         for channel in range(0, 3):
             colored_mask[it.multi_index[0], it.multi_index[1], channel] = float(segment_colors[color][channel])
 
@@ -197,7 +197,7 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
         '16c': "Posterolateral branch from RCA, third",
     }
     segment_colors = {
-        0: [0, 0, 0], # black  # change key to string i think #TODO 
+        '0': [0, 0, 0], # black
         '1': [102, 0, 0], # dark red
         '2': [0, 255, 0], # green
         '3': [0, 204, 204], # light blue
@@ -225,9 +225,9 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
         '16a': [153, 251, 255], # light blue
         '16b':  [100, 100, 100], # grey
         '16c':  [200, 200, 200], # grey
-        99: [255, 255, 255],  # white # these aren not used anyway 
-        22: [255, 255, 0], # yellow # these are not used anyway
-        255: [255, 255, 255] # white # these are not used anyway #TODO check if any of these are in any of segmentations
+        '99': [255, 255, 255],  # white 
+        '22': [255, 255, 0], # yellow 
+        '255': [255, 255, 255] # white TODO check if any of these are in any of segmentations
     }
 
     img_color = np.copy(img)
