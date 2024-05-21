@@ -96,7 +96,7 @@ def get_data(data, voting, images_path):
 
     print("GETTING DATA...")
     for filename in os.listdir(images_path):
-        filenames.append(filename.split(".")[0])
+        
 
         split = filename.index('_')
         image_id = filename[0:split]
@@ -104,6 +104,8 @@ def get_data(data, voting, images_path):
 
         if data.loc[(data['image_id'] == image_id) & (data['frame'] == int(frame))].empty:
             continue
+        
+        filenames.append(filename.split(".")[0])
 
         if voting == False:
             segmentation = data.loc[(data['image_id'] == image_id) & (data['frame'] == int(frame))].sample().iloc[0][
@@ -113,6 +115,7 @@ def get_data(data, voting, images_path):
             images.append(np.array(Image.open(f'{images_path}/{filename}')))
 
             json_string = data.loc[(data['image_id'] == image_id) & (data['frame'] == int(frame))].sample().iloc[0]['LABELS']
+           
             object_from_json = json.loads(json_string, object_pairs_hook=lambda pairs: {int(key): value for key, value in pairs})
             labels.append(object_from_json)
 
@@ -143,7 +146,7 @@ def color_segments(mask, label, segment_colors):
         if pixel.item() not in segment_colors.keys() and label.get(pixel.item()) not in segment_colors.keys():
             color = '14'
         else:
-            color =  label.get(pixel.item()) if label.get(pixel.item()) is not None else 0
+            color =  label.get(pixel.item()) if label.get(pixel.item()) is not None else 0  # change to string i think #TODO
         for channel in range(0, 3):
             colored_mask[it.multi_index[0], it.multi_index[1], channel] = float(segment_colors[color][channel])
 
@@ -194,16 +197,13 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
         '16c': "Posterolateral branch from RCA, third",
     }
     segment_colors = {
-        0: [0, 0, 0], # black
+        0: [0, 0, 0], # black  # change key to string i think #TODO 
         '1': [102, 0, 0], # dark red
         '2': [0, 255, 0], # green
         '3': [0, 204, 204], # light blue
         '4': [204, 0, 102], # pink
         # change color for dark brown
         # '5': [204, 102, 0], # dark brown
-
-
-
         '5': [204, 204, 0], # yellow
         '6': [76, 153, 0], # dark green
         '7': [204, 0, 0], # red
@@ -225,9 +225,9 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
         '16a': [153, 251, 255], # light blue
         '16b':  [100, 100, 100], # grey
         '16c':  [200, 200, 200], # grey
-        '99': [255, 255, 255],  # white
-        22: [255, 255, 0], # yellow
-        255: [255, 255, 255] # white
+        99: [255, 255, 255],  # white # these aren not used anyway 
+        22: [255, 255, 0], # yellow # these are not used anyway
+        255: [255, 255, 255] # white # these are not used anyway #TODO check if any of these are in any of segmentations
     }
 
     img_color = np.copy(img)
