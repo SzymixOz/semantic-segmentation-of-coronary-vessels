@@ -143,10 +143,14 @@ def color_segments(mask, label, segment_colors):
 
     it = np.nditer(mask, flags=['multi_index'])
     for pixel in it:
-        if pixel.item() not in segment_colors.keys() and label.get(pixel.item()) not in segment_colors.keys():
-            color = '14'
+        if label.get(pixel.item()) in segment_colors.keys():
+            color = label.get(pixel.item())
+        elif str(pixel.item()) in segment_colors.keys():
+            color = str(pixel.item())
         else:
-            color =  label.get(pixel.item()) if label.get(pixel.item()) is not None else '0'
+            # in case we dont have certain color for segment (it should not be 0 because it is black color)
+            color = '14'
+            
         for channel in range(0, 3):
             colored_mask[it.multi_index[0], it.multi_index[1], channel] = float(segment_colors[color][channel])
 
