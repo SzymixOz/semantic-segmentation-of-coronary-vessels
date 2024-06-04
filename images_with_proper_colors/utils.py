@@ -275,6 +275,10 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
     plt.imshow(result)
     # plt.legend(handles=handles, loc='upper right')
     plt.axis('off')
+
+    # create folder if not exists
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
     if name is not None:
         plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
                             hspace=0, wspace=0)
@@ -306,10 +310,17 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
 
 
 if __name__ == "__main__":
-
     data = pd.read_csv('segmentation_modified.csv', sep=';')
-    images2, segmentations2, filenames2, labels2 = get_data(data, voting=True, images_path='./images')
-    # for i, (image, seg, filename, label) in enumerate(zip(images2, segmentations2, filenames2, labels2)):
-    #     # get_mask(image, seg, label, name=filename, folder_name='segmentation_mask_2', binary=False)
-    #     get_mask(image, seg, label, name=filename, folder_name='../keypoints/ground_truth', binary=False, ground_truth=True)
-    #     break
+
+    images, segmentations, filenames, labels = get_data(data, voting=True, images_path='./images')
+    for i, (image, seg, filename, label) in enumerate(zip(images, segmentations, filenames, labels)):
+        get_mask(images[i], segmentations[i], labels[i], name=filenames[i], folder_name='bin', binary=True, ground_truth=True)
+        clear_output(wait=True)
+        break;
+
+    
+    images2, segmentations2, filenames2, labels2 = get_data(data, voting=False, images_path='./images')
+    for i, (image, seg, filename, label) in enumerate(zip(images2, segmentations2, filenames2, labels2)):
+        get_mask(images2[i], segmentations2[i], labels2[i], name=filenames2[i], folder_name='gt', binary=False, ground_truth=True)
+        clear_output(wait=True)
+        break;

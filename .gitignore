@@ -161,3 +161,8 @@ cython_debug/
 
 # Ignore ground_truth folder for now 
 keypoints/ground_truth/
+images_with_proper_colors/gt/
+images_with_proper_colors/bin/
+
+#Ignore .DS_Store files
+.DS_Store
