@@ -161,8 +161,38 @@ cython_debug/
 
 # Ignore ground_truth folder for now 
 keypoints/ground_truth/
+keypoints/ground_truth_img/
 images_with_proper_colors/gt/
 images_with_proper_colors/bin/
 
+
 #Ignore .DS_Store files
 .DS_Store
+
+# Ignore folders with wrong images
+images_with_proper_colors/wrong_images
+images_with_proper_colors/wrong
+images_with_proper_colors/images
+
+
+# Ignore folders with images to train, validate, test
+neural_network_1_stage/images_train
+neural_network_1_stage/images_val
+neural_network_1_stage/images_test
+neural_network_2_stage/images_train
+neural_network_2_stage/images_val
+neural_network_2_stage/images_test
+neural_network_3_stage/images_train
+neural_network_3_stage/images_val
+neural_network_3_stage/images_test
+new_nn_2_stage/images_train
+new_nn_2_stage/images_val
+new_nn_2_stage/images_test
+
+new_nn_2_stage/bin_org
+new_nn_2_stage/bin
+new_nn_2_stage/gt
+new_nn_2_stage/images
+
+# Ignore large model files
+large_RGB_model.pth

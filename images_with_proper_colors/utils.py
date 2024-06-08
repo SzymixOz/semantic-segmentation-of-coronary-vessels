@@ -79,7 +79,7 @@ def merge_masks(dataframe, weights={'lekandnow@gmail.com': 1, 'sgurba@gmail.com'
     return mask
 
 
-def get_data(data, voting, images_path):
+def get_data(data, voting, images_path, labeling = False):
     '''Given dataframe of segmentation data and local folder of images, returns array of images and segmentations each
     Args:
         data (pd.dataframe): Pandas dataframe with mandatory columns: image_id, frame, segmentation
@@ -114,10 +114,10 @@ def get_data(data, voting, images_path):
             segmentations.append(segmentation)
             images.append(np.array(Image.open(f'{images_path}/{filename}')))
 
-            json_string = data.loc[(data['image_id'] == image_id) & (data['frame'] == int(frame))].sample().iloc[0]['LABELS']
-           
-            object_from_json = json.loads(json_string, object_pairs_hook=lambda pairs: {int(key): value for key, value in pairs})
-            labels.append(object_from_json)
+            if labeling == True:
+                json_string = data.loc[(data['image_id'] == image_id) & (data['frame'] == int(frame))].sample().iloc[0]['LABELS']
+                object_from_json = json.loads(json_string, object_pairs_hook=lambda pairs: {int(key): value for key, value in pairs})
+                labels.append(object_from_json)
 
 
 
@@ -128,12 +128,13 @@ def get_data(data, voting, images_path):
                 segmentations.append(mask)
                 images.append(np.array(Image.open(f'{images_path}/{filename}')))
                 # prawdopodobnie trzeba bedzie dodac mergowanie labels dla voting
-                json_string = data.loc[(data['image_id'] == image_id) & (data['frame'] == int(frame))].sample().iloc[0]['LABELS']
-                object_from_json = json.loads(json_string)
-                labels.append(object_from_json)
+                if labeling == True:
+                    json_string = data.loc[(data['image_id'] == image_id) & (data['frame'] == int(frame))].sample().iloc[0]['LABELS']
+                    object_from_json = json.loads(json_string)
+                    labels.append(object_from_json)
 
 
-    return (images, segmentations, filenames, labels)
+    return (images, segmentations, filenames, labels) if labeling == True else (images, segmentations, filenames)
 
 
 def color_segments(mask, label, segment_colors):
@@ -143,7 +144,7 @@ def color_segments(mask, label, segment_colors):
 
     it = np.nditer(mask, flags=['multi_index'])
     for pixel in it:
-        if label.get(pixel.item()) in segment_colors.keys():
+        if label and label.get(pixel.item()) in segment_colors.keys():
             color = label.get(pixel.item())
         elif str(pixel.item()) in segment_colors.keys():
             color = str(pixel.item())
@@ -251,7 +252,7 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
     result = mask_color / 255.0 if ground_truth else cv2.addWeighted(mask_color, mask_intensity, img_color, img_intensity, 0, img_color)
     #result = cv2.addWeighted(mask_color, mask_intensity, img_color, img_intensity, 0, img_color)
     print(np.unique(mask_color))
-    if not np.unique(mask).shape[0] < 3:
+    if not np.unique(mask).shape[0] < 3 and label:
         segments = np.unique(mask).tolist()[1:]
         print(segments)
         handles = []
