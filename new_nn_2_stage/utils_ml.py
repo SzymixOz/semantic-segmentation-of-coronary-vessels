@@ -228,6 +228,7 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
         '16a': [23],
         '16b': [24],
         '16c': [25],
+        
         '99':  [26],
         '22':  [27],
         '255': [26],

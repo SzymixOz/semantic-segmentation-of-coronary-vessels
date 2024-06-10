@@ -3,38 +3,39 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class UNet(nn.Module):
-    def __init__(self):
+    def __init__(self, num_classes=28, dropout_rate=0.2):
         super(UNet, self).__init__()
         
-        def CBR(in_channels, out_channels):
+        def CBR(in_channels, out_channels, dropout_rate):
             return nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
                 nn.BatchNorm2d(out_channels),
                 nn.ReLU(inplace=True),
                 nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
                 nn.BatchNorm2d(out_channels),
-                nn.ReLU(inplace=True)
+                nn.ReLU(inplace=True),
+                nn.Dropout2d(dropout_rate)
             )
 
-        self.enc1 = CBR(1, 64)
-        self.enc2 = CBR(64, 128)
-        self.enc3 = CBR(128, 256)
-        self.enc4 = CBR(256, 512)
+        self.enc1 = CBR(1, 64, dropout_rate)
+        self.enc2 = CBR(64, 128, dropout_rate)
+        self.enc3 = CBR(128, 256, dropout_rate)
+        self.enc4 = CBR(256, 512, dropout_rate)
         
         self.pool = nn.MaxPool2d(2)
 
-        self.bottleneck = CBR(512, 1024)
+        self.bottleneck = CBR(512, 1024, dropout_rate)
 
         self.upconv4 = nn.ConvTranspose2d(1024, 512, kernel_size=2, stride=2)
-        self.dec4 = CBR(1024, 512)
+        self.dec4 = CBR(1024, 512, dropout_rate)
         self.upconv3 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
-        self.dec3 = CBR(512, 256)
+        self.dec3 = CBR(512, 256, dropout_rate)
         self.upconv2 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)
-        self.dec2 = CBR(256, 128)
+        self.dec2 = CBR(256, 128, dropout_rate)
         self.upconv1 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
-        self.dec1 = CBR(128, 64)
+        self.dec1 = CBR(128, 64, dropout_rate)
         
-        self.conv_last = nn.Conv2d(64, 28, kernel_size=1)
+        self.conv_last = nn.Conv2d(64, num_classes, kernel_size=1)
 
     def forward(self, x):
         enc1 = self.enc1(x)

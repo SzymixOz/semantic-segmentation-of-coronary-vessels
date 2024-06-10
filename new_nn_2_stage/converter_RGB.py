@@ -30,7 +30,7 @@ colors_dict = {
     26: [255, 255, 255],  # white 
     27: [255, 255, 0], # yellow
     
-    29: [255, 255, 155], # 
+    # 29: [255, 255, 155], # 
 }
 
 # stwórz słownik odwrotny do colors_dict
