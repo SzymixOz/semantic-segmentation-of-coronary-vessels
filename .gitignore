@@ -189,3 +189,11 @@ new_nn_2_stage/images
 medium_RGB_model.pth
 large_RGB_model.pth
 large_RGB_model_dropout.pth
+
+# Ignore ground_truth folder for now 
+keypoints/ground_truth/
+keypoints/ground_truth_img/
+keypoints/skeletonization-main/
+keypoints/**/*.bmp
+images_with_proper_colors/gt/
+images_with_proper_colors/bin/

@@ -276,16 +276,21 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
     plt.imshow(result)
     # plt.legend(handles=handles, loc='upper right')
     plt.axis('off')
+    plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
+                            hspace=0, wspace=0)
+    plt.margins(0, 0)
 
     # create folder if not exists
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
     if name is not None:
-        plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
-                            hspace=0, wspace=0)
-        plt.margins(0, 0)
-        plt.savefig(f'./{folder_name}/{name}.png', bbox_inches='tight', pad_inches=0, transparent=False, dpi=80)
-        plt.close()
+        if binary:
+            mask_color = cv2.cvtColor(mask_color, cv2.COLOR_RGB2GRAY)
+            print(mask_color.shape)
+            cv2.imwrite(f'./{folder_name}/{name}.png', mask_color)
+        else:
+            cv2.imwrite(f'./{folder_name}/{name}.png', cv2.cvtColor(mask_color, cv2.COLOR_RGB2BGR))
+        # plt.savefig(f'./{folder_name}/{name}.png', bbox_inches='tight', pad_inches=0, transparent=False, dpi=80)
         # Other solution
         # if np.isnan(result).any():
         #     print("Warning: NaN values found in 'result'. Replacing with 0.")
@@ -307,10 +312,21 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
 
         # # Save the image
         # pil_img.save(f'./images/{name}.png')
+    plt.close()
+    
     return result
 
+def simple_test():
+    data = pd.read_csv('segmentation_modified.csv', sep=';')
 
-if __name__ == "__main__":
+    images, segmentations, filenames, labels = get_data(data, voting=False, images_path='./images', labeling=True)
+    get_mask(images[0], segmentations[0], labels[0], name=filenames[0], folder_name='bin', binary=False, ground_truth=True)
+
+    
+    images_voting, segmentations_voting, filenames_voting, labels_voting = get_data(data, voting=True, images_path='./images', labeling=True)
+    get_mask(images_voting[0], segmentations_voting[0], labels_voting[0], name=filenames_voting[0], folder_name='gt', binary=True, ground_truth=True)
+
+def save_images():
     data = pd.read_csv('segmentation_modified.csv', sep=';')
 
     images, segmentations, filenames, labels = get_data(data, voting=True, images_path='./images')
@@ -325,3 +341,8 @@ if __name__ == "__main__":
         get_mask(images2[i], segmentations2[i], labels2[i], name=filenames2[i], folder_name='gt', binary=False, ground_truth=True)
         clear_output(wait=True)
         break;
+
+if __name__ == "__main__":
+    simple_test()
+    # save_images()
+    
