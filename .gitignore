@@ -162,9 +162,10 @@ cython_debug/
 # Ignore ground_truth folder for now 
 keypoints/ground_truth/
 keypoints/ground_truth_img/
-images_with_proper_colors/gt/
-images_with_proper_colors/bin/
-
+images_with_proper_colors/gt*/
+images_with_proper_colors/bin*/
+keypoints/skeletonization-main/
+keypoints/**/*.bmp
 
 #Ignore .DS_Store files
 .DS_Store
@@ -192,11 +193,3 @@ large_RGB_model_dropout.pth
 
 large_RGB_model_binary.pth
 large_RGB_model_dicom.pth
-
-# Ignore ground_truth folder for now 
-keypoints/ground_truth/
-keypoints/ground_truth_img/
-keypoints/skeletonization-main/
-keypoints/**/*.bmp
-images_with_proper_colors/gt/
-images_with_proper_colors/bin/
