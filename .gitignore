@@ -189,3 +189,6 @@ new_nn_2_stage/images
 medium_RGB_model.pth
 large_RGB_model.pth
 large_RGB_model_dropout.pth
+
+large_RGB_model_binary.pth
+large_RGB_model_dicom.pth
