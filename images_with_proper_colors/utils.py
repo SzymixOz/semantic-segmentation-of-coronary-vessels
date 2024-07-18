@@ -79,7 +79,7 @@ def merge_masks(dataframe, weights={'lekandnow@gmail.com': 1, 'sgurba@gmail.com'
     return mask
 
 
-def get_data(data, voting, images_path, labeling = False):
+def get_data(data, voting, images_path, labeling = True):
     '''Given dataframe of segmentation data and local folder of images, returns array of images and segmentations each
     Args:
         data (pd.dataframe): Pandas dataframe with mandatory columns: image_id, frame, segmentation
@@ -320,11 +320,11 @@ def simple_test():
     data = pd.read_csv('segmentation_modified.csv', sep=';')
 
     images, segmentations, filenames, labels = get_data(data, voting=False, images_path='./images', labeling=True)
-    get_mask(images[0], segmentations[0], labels[0], name=filenames[0], folder_name='bin', binary=False, ground_truth=True)
+    get_mask(images[0], segmentations[0], labels[0], name=filenames[0], folder_name='gt', binary=False, ground_truth=True)
 
     
     images_voting, segmentations_voting, filenames_voting, labels_voting = get_data(data, voting=True, images_path='./images', labeling=True)
-    get_mask(images_voting[0], segmentations_voting[0], labels_voting[0], name=filenames_voting[0], folder_name='gt', binary=True, ground_truth=True)
+    get_mask(images_voting[0], segmentations_voting[0], labels_voting[0], name=filenames_voting[0], folder_name='bin', binary=True, ground_truth=True)
 
 def save_images():
     data = pd.read_csv('segmentation_modified.csv', sep=';')
@@ -342,7 +342,17 @@ def save_images():
         clear_output(wait=True)
         break;
 
+def test_for_new_df():
+    data = pd.read_csv('new_df.csv', sep=',')
+
+    images, segmentations, filenames = get_data(data, voting=False, images_path='./images', labeling=False)
+    get_mask(images[0], segmentations[0], None, name=filenames[0], folder_name='gt_new_df', binary=False, ground_truth=True)
+
+    images2, segmentations2, filenames2 = get_data(data, voting=True, images_path='./images', labeling=False)
+    get_mask(images2[0], segmentations2[0], None, name=filenames2[0], folder_name='bin_new_df', binary=True, ground_truth=True)
+
 if __name__ == "__main__":
     simple_test()
+    test_for_new_df()
     # save_images()
     
