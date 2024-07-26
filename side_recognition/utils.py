@@ -93,7 +93,7 @@ def get_data(data, voting, images_path, labeling = True):
     segmentations = []
     filenames = []
     labels = []
-    data=data[data['side'] == 'UNKNOWN']
+    data=data[data['side'] == 'RIGHT']
     print(data)
     print("GETTING DATA...")
     for filename in os.listdir(images_path):
@@ -348,7 +348,7 @@ def test_for_new_df():
 
     images2, segmentations2, filenames2 = get_data(data, voting=True, images_path='./images', labeling=False)
     for i, (image, seg, filename) in enumerate(zip(images2, segmentations2, filenames2)):
-        get_mask(images2[i], segmentations2[i], None, name=filenames2[i], folder_name='unknown_side_new_df', binary=True, ground_truth=True)
+        get_mask(images2[i], segmentations2[i], None, name=filenames2[i], folder_name='right_side_new_df', binary=True, ground_truth=True)
 
 if __name__ == "__main__":
     # simple_test()
