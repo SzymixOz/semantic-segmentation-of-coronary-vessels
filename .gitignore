@@ -177,9 +177,9 @@ images_with_proper_colors/images
 
 
 # Ignore folders with images to train, validate, test
-images_train
-images_val
-images_test
+n*/images_train
+n*/images_val
+n*/images_test
 
 new_nn_2_stage/bin_org
 new_nn_2_stage/bin
@@ -193,3 +193,6 @@ large_RGB_model_dropout.pth
 
 large_RGB_model_binary.pth
 large_RGB_model_dicom.pth
+
+# Ignore model files
+*.pth
