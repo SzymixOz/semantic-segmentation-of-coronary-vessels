@@ -47,8 +47,6 @@ class CoronarySmallDataset(Dataset):
         
 
 transform = transforms.Compose([
-    transforms.RandomResizedCrop(size=(256, 256), scale=(0.8, 1.0), ratio=(1.0, 1.0), interpolation=InterpolationMode.NEAREST),
-    transforms.RandomRotation(degree=(-30, 30), interpolation=InterpolationMode.NEAREST),
     transforms.ToTensor()
 ])
 
@@ -56,16 +54,16 @@ train_image_dir = '..\images\images_train\input'
 train_mask_dir = '..\images\images_train\output'
 val_image_dir = '..\images\images_val\input'
 val_mask_dir = '..\images\images_val\output'
-test_image_dir = '..\images\images_test\input'
-test_mask_dir = '..\images\images_test\output'
+# test_image_dir = '..\images\images_test\input'
+# test_mask_dir = '..\images\images_test\output'
 
 train_dataset = CoronarySmallDataset(train_image_dir, train_mask_dir, transform=transform)
 val_dataset = CoronarySmallDataset(val_image_dir, val_mask_dir, transform=transform)
-test_dataset = CoronarySmallDataset(test_image_dir, test_mask_dir, transform=transform)
+# test_dataset = CoronarySmallDataset(test_image_dir, test_mask_dir, transform=transform)
 
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)
-test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
+# test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -131,7 +129,7 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, model_nam
 
 
 train_model(model, train_loader, val_loader, criterion, optimizer,
-            "RGB_model_INTER_NEAREST_3", num_epochs=100, early_stopping=5)
+            "model_binary_5", num_epochs=100, early_stopping=5)
 
 
 starting_epoch = 5
@@ -145,5 +143,5 @@ plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
 plt.title('Training and Validation Loss')
-plt.savefig('loss_plot3.png')
+plt.savefig('loss_plot5.png')
 plt.show()
