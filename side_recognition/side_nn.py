@@ -6,23 +6,23 @@ import matplotlib.pyplot as plt
 import time
 import copy
 import os
-print("początek programu")
+
+print("STARTUP")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print("device zdefiniowany")
 print(device)
 
 torch.manual_seed(17)
 
 train_augs = torchvision.transforms.Compose(
     [
-        torchvision.transforms.RandomResizedCrop(size=(448, 448), scale=(0.9, 1.0), ratio=(8/9, 9/8)),
+        torchvision.transforms.RandomResizedCrop(size=(224, 224), scale=(0.9, 1.0), ratio=(8/9, 9/8)),
         torchvision.transforms.ToTensor(),
     ]
 )
 
 val_augs = torchvision.transforms.Compose(
     [
-        torchvision.transforms.Resize(512),
+        transforms.Resize(224),
         torchvision.transforms.ToTensor(),
     ]
 )
@@ -39,7 +39,7 @@ train_losses = []
 val_losses = []
 
 def train_model(
-    model, dataloaders, criterion, optimizer, num_epochs=25
+    model, dataloaders, criterion, optimizer, num_epochs
 ):
     since = time.time()
     val_acc_history = []
@@ -139,9 +139,9 @@ val_iter = torch.utils.data.DataLoader(
 )
 loss = nn.CrossEntropyLoss(reduction="none")
 
-def train_fine_tuning(net, learning_rate, num_epochs=25):
+def train_fine_tuning(net, learning_rate, num_epochs):
 
-    trainer = torch.optim.SGD([{"params": finetuned_net[2].parameters(), "lr": learning_rate}], lr=learning_rate)
+    trainer = torch.optim.SGD([{"params": finetuned_net[2].parameters(), "lr": learning_rate * 10}], lr=learning_rate)
 
     dataloaders_dict = {"train": train_iter, "val": val_iter}
     criterion = nn.CrossEntropyLoss()
@@ -150,7 +150,7 @@ def train_fine_tuning(net, learning_rate, num_epochs=25):
     )
     return model_ft, hist
 
-model_ft, hist = train_fine_tuning(model_ft, learning_rate=5e-4)
+model_ft, hist = train_fine_tuning(model_ft, learning_rate=5e-4, num_epochs=35)
 
 starting_epoch = 1
 y = list(range(starting_epoch, len(train_losses)))
