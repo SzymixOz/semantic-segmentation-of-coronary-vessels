@@ -341,7 +341,7 @@ def save_images():
         break;
 
 def test_for_new_df():
-    data = pd.read_csv('new_df.csv', sep=',')
+    data = pd.read_csv('preparing_images_tool/new_df.csv', sep=',')
 
     # images, segmentations, filenames = get_data(data, voting=False, images_path='./images', labeling=False)
     # get_mask(images[0], segmentations[0], None, name=filenames[0], folder_name='gt_new_df', binary=False, ground_truth=True)
