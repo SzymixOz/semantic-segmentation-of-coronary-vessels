@@ -13,7 +13,6 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
-import random
 
 
 class CoronarySmallDataset(Dataset):
@@ -38,6 +37,7 @@ class CoronarySmallDataset(Dataset):
         
         mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
         # mask = cv2.cvtColor(mask, cv2.COLOR_RGBA2RGB)
+        mask //= 29
         mask = cv2.resize(mask, (SIZE, SIZE), interpolation=cv2.INTER_NEAREST)
         
         if self.transform:
@@ -63,18 +63,18 @@ train_dataset = CoronarySmallDataset(train_image_dir, train_mask_dir, transform=
 val_dataset = CoronarySmallDataset(val_image_dir, val_mask_dir, transform=transform)
 # test_dataset = CoronarySmallDataset(test_image_dir, test_mask_dir, transform=transform)
 
-train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=8, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 # test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = UNet()
+model = UNet(num_classes=2, dropout_rate=0.5)
 model = model.to(device)
 
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=1.2e-4)
+optimizer = optim.Adam(model.parameters(), lr=9e-5)
 train_losses = []
 val_losses = []
 
@@ -131,12 +131,12 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, model_nam
 
 
 train_model(model, train_loader, val_loader, criterion, optimizer,
-            "model_dicom_binary_1", num_epochs=100, early_stopping=5)
+            "model_dicom_binary_1", num_epochs=65, early_stopping=3)
 
 
 starting_epoch = 5
 y = list(range(starting_epoch, len(train_losses)))
-plt.figure(figsize=(100, 50))
+plt.figure(figsize=(20, 10))
 plt.plot(y, train_losses[starting_epoch:], label='Train Loss')
 plt.scatter(y, train_losses[starting_epoch:])
 plt.plot(y, val_losses[starting_epoch:], label='Validation Loss')
