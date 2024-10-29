@@ -62,6 +62,7 @@ def load_first(dir_image: str, dir_mask: str) -> Tuple[np.ndarray, np.ndarray]:
         - dir_mask (str): The directory containing the masks.
 
         Returns:
+        - image_name (str): The name of the image.
         - image (np.ndarray): The first image found in the directory.
         - mask (np.ndarray): The first mask found in the directory.
     """
@@ -70,8 +71,8 @@ def load_first(dir_image: str, dir_mask: str) -> Tuple[np.ndarray, np.ndarray]:
         if filename.endswith(".png"):
             image = cv2.imread(dir_image + filename)
             mask = cv2.imread(dir_mask + filename)
-            return image, mask
-    return None, None
+            return filename.split('.')[0], image, mask
+    return None, None, None
 
 
 def find_keypoints_on_graph(skeleton: np.ndarray) -> Tuple[np.ndarray, list, list, list, list]:
@@ -222,7 +223,7 @@ def draw_everything_else(image_binary: np.ndarray, skeleton: np.ndarray, coordin
 
 import os
 
-def save_points_to_grayscale_image(skeleton: np.ndarray, coordinates: Tuple[np.ndarray, np.ndarray], bifurcations: list, crossings: list, endpoints: list) -> None:
+def save_points_to_grayscale_image(image_name: str, skeleton: np.ndarray, coordinates: Tuple[np.ndarray, np.ndarray], bifurcations: list, crossings: list, endpoints: list) -> None:
     """
         This function saves the keypoints to a single-layer grayscale image.
 
@@ -234,6 +235,7 @@ def save_points_to_grayscale_image(skeleton: np.ndarray, coordinates: Tuple[np.n
         - 4: Endpoints (nodes with degree = 1)
 
         Parameters:
+        - image_name (str): The name of the image.
         - image (np.ndarray): The original RGB image (not used in the grayscale image).
         - skeleton (np.ndarray): The skeletonized version of the image.
         - coordinates (tuple): A tuple containing the coordinates of the skeleton points.
@@ -241,7 +243,7 @@ def save_points_to_grayscale_image(skeleton: np.ndarray, coordinates: Tuple[np.n
         - crossings (list): A list of indices representing crossing points in the skeleton.
         - endpoints (list): A list of indices representing endpoint points in the skeleton.
 
-        The function will save the resulting grayscale image inside a folder named "keypoints" with the filename "keypoints_image.png".
+        The function will save the resulting grayscale image inside a folder named "keypoints" with the filename "{image_name}.png".
     """
 
     if not os.path.exists('keypoints'):
@@ -261,10 +263,10 @@ def save_points_to_grayscale_image(skeleton: np.ndarray, coordinates: Tuple[np.n
     draw_points(crossings, 3)
     draw_points(endpoints, 4)
 
-    cv2.imwrite('keypoints/keypoints_image.png', grayscale_image)
+    cv2.imwrite(f'keypoints/{image_name}.png', grayscale_image)
 
 
-def keypoints(mask: np.ndarray) -> None:
+def keypoints(image_name: str, mask: np.ndarray, with_plot: bool = True) -> None:
     """
         This function takes a binary mask as input and returns the keypoints of the mask.
 
@@ -276,20 +278,58 @@ def keypoints(mask: np.ndarray) -> None:
     skeleton = get_skeleton_from_mask(mask_preprocessed)
 
     coordinates, endpoints, crossings, filtered_branchpoints, filtered_out = find_keypoints_on_graph(skeleton)
-    draw_everything_else(mask_preprocessed, skeleton, coordinates, endpoints, crossings, filtered_branchpoints, filtered_out)
 
-    save_points_to_grayscale_image(skeleton, coordinates, filtered_branchpoints, crossings, endpoints)
+    if with_plot:
+        draw_everything_else(mask_preprocessed, skeleton, coordinates, endpoints, crossings, filtered_branchpoints, filtered_out)
+
+    save_points_to_grayscale_image(image_name, skeleton, coordinates, filtered_branchpoints, crossings, endpoints)
 
 
-if __name__ == '__main__':
+def make_first_image():
+    """
+        This function loads the first image from the dataset and displays the keypoints.
+    """
     image_folder = "../images_with_proper_colors/images/"
     mask_folder = "../images_with_proper_colors/bin/"
 
-    image, mask = load_first(image_folder, mask_folder) # That is not binary image. rememeber!
+    image_name, image, mask = load_first(image_folder, mask_folder) # That is not binary image. rememeber!
     print(f'Loaded mask: {mask.shape} with values: {np.unique(mask)}')
 
     # Convert to binary
     mask_gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
     mask_binary = mask_gray > 0
 
-    keypoints(mask_binary)
+    keypoints(image_name, mask_binary)
+
+
+import sys
+sys.path.append("../images_with_proper_colors/")
+from utils import *
+
+def make_all_images():
+    """
+        This function loads all images from the dataset and displays the keypoints.
+    """
+    data_folder = "../images_with_proper_colors/"
+    data = pd.read_csv(data_folder + "segmentation_modified.csv", sep=";")
+
+    images_voting, segmentations_voting, filenames_voting, labels_voting = get_data(data, voting=True, images_path=(data_folder + "images"), labeling=True)
+    
+    print("GENERATING KEYPOINTS...")
+    std_output = sys.stdout
+    sys.stdout = open(os.devnull, 'w') 
+
+    for index in range(len(images_voting)):
+        mask = get_mask(images_voting[index], segmentations_voting[index], labels_voting[index], name=filenames_voting[index], folder_name='ground_truth', binary=True, ground_truth=True)
+        mask_gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+        mask_binary = mask_gray > 0
+        keypoints(filenames_voting[index], mask_binary, with_plot=False)
+
+    sys.stdout = std_output
+
+    print("GENERATION OF KEYPOINTS FINISHED")
+
+if __name__ == '__main__':
+    make_all_images() 
+    # make_first_image()
+ 
