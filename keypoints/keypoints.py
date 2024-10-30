@@ -508,10 +508,8 @@ def make_all_images():
     # sys.stdout = open(os.devnull, 'w')
 
     for index in range(len(images_voting)):
-        if index < 0:  # Skip first 8 images
+        if index!=0:
             continue
-        if index > 0:  # Skip all images after 8th
-            break
         mask = get_mask(
             images_voting[index],
             segmentations_voting[index],
