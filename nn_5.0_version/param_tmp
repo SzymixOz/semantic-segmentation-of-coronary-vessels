@@ -1,0 +1,38 @@
+model_1:
+    drop = 0.2
+    lr = 2.4
+model_left_1:
+    drop = 0.2
+    lr = 2.4
+model_right_1:
+    drop = 0.2
+    lr = 2.4
+
+model_2:
+    drop = 0.3
+    lr = 2.4
+model_left_2:
+    drop = 0.3
+    lr = 2.4
+model_right_1:
+    drop = 0.3
+    lr = 2.4
+
+model_3:
+    drop = 0.4
+    lr = 2.4
+model_left_3:
+    drop = 0.4
+    lr = 2.4
+model_right_1:
+    drop = 
+    lr = 
+
+model_left_4:
+    drop = 0.35
+    lr = 2.4
+
+    Train loss - niebieski
+    Val loss - pomarańczowy
+    Train accuracy - zielony
+    Val accuracy - czerwony
