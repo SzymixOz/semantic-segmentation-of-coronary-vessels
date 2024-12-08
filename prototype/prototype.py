@@ -6,17 +6,18 @@ import torch
 from torchvision import transforms
 import numpy as np
 from large_RGB_model import UNet
+import torchvision
+import torch.nn as nn
 
 loaded_image_tab1 = None
 photo1_tab1 = None
 
-loaded_image_tab2 = None
-photo1_tab2 = None
-
 recognized_side = None
 detected_side_str = "Detected side:"
+
+
 def upload_image_tab1():
-    global loaded_image_tab1, photo1_tab1
+    global loaded_image_tab1, photo1_tab1, recognized_side
     file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")])
     if file_path:
         loaded_image_tab1 = cv2.imread(file_path)
@@ -25,10 +26,27 @@ def upload_image_tab1():
         photo1_tab1 = ImageTk.PhotoImage(Image.fromarray(resized_image_rgb))
         image_label1_tab1.config(image=photo1_tab1)
         image_label1_tab1.image = photo1_tab1
-        recognized_side = False
+
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        pretrained_net = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.IMAGENET1K_V1)
+        side_model = nn.Sequential(
+            pretrained_net,
+            nn.ReLU(),
+            nn.Linear(1000, 2)
+        )
+        side_model = side_model.to(device)
+        side_model.load_state_dict(torch.load('models/side_recognition_model.pth'))
+        side_model.eval()
+
+        img_tensor = transforms.ToTensor()(resized_image_rgb).unsqueeze(0).to(device)
+        with torch.no_grad():
+            side_pred = side_model(img_tensor)
+            recognized_side = torch.argmax(side_pred).item() == 1
+
         side_label.config(text=f"{detected_side_str} {'left' if not recognized_side else 'right'}")
         predict_button_tab1.config(state=tk.NORMAL)
-        toggle_button.grid(row=2, column=1, padx=10, pady=10)  # Show the Change side button
+        toggle_button.grid(row=2, column=1, padx=10, pady=10)
+
 
 def predict_image_tab1():
     global loaded_image_tab1
@@ -39,6 +57,7 @@ def predict_image_tab1():
         photo2_tab1 = ImageTk.PhotoImage(Image.fromarray(resized_image_rgb))
         image_label2_tab1.config(image=photo2_tab1)
         image_label2_tab1.image = photo2_tab1
+
 
 def predict(img):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -58,8 +77,9 @@ def predict(img):
     pred_image[..., 0] = (R * 255).astype(np.uint8)
     pred_image[..., 1] = (G * 255).astype(np.uint8)
     pred_image[..., 2] = (B * 255).astype(np.uint8)
-    
+
     return pred_image
+
 
 def toggle_side():
     global recognized_side
