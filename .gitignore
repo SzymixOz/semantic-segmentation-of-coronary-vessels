@@ -193,3 +193,7 @@ large_RGB_model_dropout.pth
 
 large_RGB_model_binary.pth
 large_RGB_model_dicom.pth
+
+seg_binary
+keypoints/for-thesis
+keypoints/keypoints_legend
