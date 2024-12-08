@@ -515,7 +515,7 @@ def make_all_images_from_csv():
         )
         mask_gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
         mask_binary = mask_gray > 0
-        keypoints(filenames_voting[index], mask_binary, with_plot=True)
+        keypoints(filenames_voting[index], mask_binary, with_plot=False)
 
     sys.stdout = std_output
     print("GENERATION OF KEYPOINTS FINISHED")
