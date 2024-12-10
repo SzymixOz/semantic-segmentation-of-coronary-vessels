@@ -38,7 +38,7 @@ def predict(img):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = UNet()
     model = model.to(device)
-    model.load_state_dict(torch.load('large_RGB_model_binary.pth'))
+    model.load_state_dict(torch.load('large_RGB_model_dicom.pth'))
 
     model.eval()
 
