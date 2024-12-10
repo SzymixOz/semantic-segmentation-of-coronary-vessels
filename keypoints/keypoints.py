@@ -181,7 +181,7 @@ def find_keypoints_on_graph(
             if len(paths) > 1:
                 crossings.add(branchpoint2)
 
-    max_distance = 100
+    max_distance = 70
     for crossing in crossings.copy():
         nearest_branchpoint, is_filtered_out = bfs_find_in_distance(G, crossing, max_distance, filtered_branchpoints)
         if nearest_branchpoint is not None and not is_filtered_out:
@@ -364,6 +364,7 @@ def draw_everything_else(
 
 def save_points_to_grayscale_image(
     image_name: str,
+    dir_name: str,
     skeleton: np.ndarray,
     coordinates: Tuple[np.ndarray, np.ndarray],
     bifurcations: list,
@@ -383,6 +384,7 @@ def save_points_to_grayscale_image(
 
     Parameters:
     - image_name (str): The name of the image.
+    - dir_name (str): The directory where the grayscale image will be saved
     - image (np.ndarray): The original RGB image (not used in the grayscale image).
     - skeleton (np.ndarray): The skeletonized version of the image.
     - coordinates (tuple): A tuple containing the coordinates of the skeleton points.
@@ -393,8 +395,8 @@ def save_points_to_grayscale_image(
     The function will save the resulting grayscale image inside a folder named "keypoints" with the filename "{image_name}.png".
     """
 
-    if not os.path.exists("keypoints"):
-        os.makedirs("keypoints")
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
 
     height, width = skeleton.shape[:2]
     grayscale_image = np.zeros((height, width), dtype=np.uint8)
@@ -421,15 +423,18 @@ def save_points_to_grayscale_image(
     draw_points(crossings, 3)
     # draw_points(endpoints, 4) - Not needed
 
-    cv2.imwrite(f"keypoints/{image_name}.png", grayscale_image)
+    cv2.imwrite(f"{dir_name}/{image_name}.png", grayscale_image)
 
 
-def keypoints(image_name: str, mask: np.ndarray, with_plot: bool = True) -> None:
+def keypoints(image_name: str, dir_name: str, mask: np.ndarray, with_plot: bool = True) -> None:
     """
     This function takes a binary mask as input and returns the keypoints of the mask.
 
     Parameters:
+    - image_name (str): The name of the image.
+    - dir_name (str): The directory where the grayscale image will be saved
     - mask (np.ndarray): A binary mask of the image.
+    - with_plot (bool): A boolean indicating whether to save the keypoints with legend.
     """
     mask_preprocessed = preprocessing(mask)
 
@@ -458,7 +463,7 @@ def keypoints(image_name: str, mask: np.ndarray, with_plot: bool = True) -> None
         )
 
     save_points_to_grayscale_image(
-        image_name, skeleton, coordinates, filtered_branchpoints, crossings, crossings_connected, endpoints
+        image_name, dir_name, skeleton, coordinates, filtered_branchpoints, crossings, crossings_connected, endpoints
     )
 
 
@@ -466,7 +471,7 @@ def make_all_images_from_dir():
     """
     This function loads the first image from the dataset and displays the keypoints.
     """
-    dir_mask = "../images_with_proper_colors/bin/" # You can select correct directory here
+    dir_mask = "../seg_binary/images_binary/" # You can select correct directory here
 
     print("GENERATING KEYPOINTS...")
     std_output = sys.stdout
@@ -479,7 +484,7 @@ def make_all_images_from_dir():
             # Convert to binary
             mask_gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
             mask_binary = mask_gray > 0
-            keypoints(filename.split(".")[0], mask_binary, with_plot=False)
+            keypoints(filename.split(".")[0], "keypoints_from_dir", mask_binary, with_plot=False)
 
     sys.stdout = std_output
     print("GENERATION OF KEYPOINTS FINISHED")
@@ -515,7 +520,7 @@ def make_all_images_from_csv():
         )
         mask_gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
         mask_binary = mask_gray > 0
-        keypoints(filenames_voting[index], mask_binary, with_plot=False)
+        keypoints(filenames_voting[index], "keypoints_from_csv", mask_binary, with_plot=False)
 
     sys.stdout = std_output
     print("GENERATION OF KEYPOINTS FINISHED")
@@ -526,4 +531,4 @@ if __name__ == "__main__":
         raise Exception("Please run this file from the same directory as the file")
     
     make_all_images_from_csv()
-    # make_all_images_from_dir()
+    make_all_images_from_dir()
