@@ -17,10 +17,12 @@ def load_dicom_image(file_path):
     # Wczytanie obrazu DICOM w trybie binarnym
     with open(file_path, 'rb') as f:
         dicom_bytes = f.read()
+    print(f"Dicom bytes: {dicom_bytes}")
     
     # Konwersja binarnej zawartości na macierz numpy
     # Za pomocą OpenCV dekodujemy obraz w formacie DICOM
     image = cv2.imdecode(np.frombuffer(dicom_bytes, np.uint8), cv2.IMREAD_UNCHANGED)
+    print(f"Image shape: {image.shape}")
 
     # Skaluje obraz do 512x512
     image = cv2.resize(image, (512, 512))
@@ -48,6 +50,11 @@ def main():
             
             # Wczytanie obrazu DICOM
             image = load_dicom_image(dicom_file)
+
+            print(image.shape)
+            cv2.imshow("Image", image)
+            cv2.waitKey(0)
+            return
             
             # Segmentacja obrazu
             mask = segment(image, model)

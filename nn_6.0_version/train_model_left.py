@@ -43,6 +43,7 @@ class CoronarySmallDataset(Dataset):
         keypoint = cv2.imread(keypoint_path, cv2.IMREAD_UNCHANGED)
         keypoint = cv2.resize(keypoint, (SIZE, SIZE), interpolation=cv2.INTER_NEAREST)
 
+        binary = binary * 28
         binary = np.expand_dims(binary, axis=2)
         keypoint = np.expand_dims(keypoint, axis=2)
         input = np.concatenate((dicom, binary, keypoint), axis=2)
@@ -62,12 +63,12 @@ transform = transforms.Compose([
 ])
 
 train_dicom_dir = '../images/images_left/images_train/input_dicom'
-train_binary_dir = '../images/images_left/images_train/input'
+train_binary_dir = '../images/images_left/images_train/binary'
 train_keypoint_dir = '../images/images_left/images_train/keypoints'
 train_output_dir = '../images/images_left/images_train/output'
 
 val_dicom_dir = '../images/images_left/images_val/input_dicom'
-val_binary_dir = '../images/images_left/images_val/input'
+val_binary_dir = '../images/images_left/images_val/binary'
 val_keypoint_dir = '../images/images_left/images_val/keypoints'
 val_output_dir = '../images/images_left/images_val/output'
 
@@ -159,14 +160,14 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, model_nam
 
         
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = UNet(dropout_rate=0.35)
+model = UNet(dropout_rate=0.4)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=2.4e-4)
+optimizer = optim.Adam(model.parameters(), lr=1.6e-4)
 
 train_model(model, train_loader, val_loader, criterion, optimizer,
-            "model_left_4", num_epochs=140, early_stopping=4)
+            "model_left_4", num_epochs=200, early_stopping=5)
 
 
 starting_epoch = 3

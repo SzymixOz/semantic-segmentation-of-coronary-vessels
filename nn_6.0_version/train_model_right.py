@@ -44,8 +44,12 @@ class CoronarySmallDataset(Dataset):
         keypoint = cv2.resize(keypoint, (SIZE, SIZE), interpolation=cv2.INTER_NEAREST)
 
         binary = np.expand_dims(binary, axis=2)
+        binary = binary * 28
+        # pusta macież 3D 
+        # empty = np.zeros((SIZE, SIZE, 1))
         keypoint = np.expand_dims(keypoint, axis=2)
         input = np.concatenate((dicom, binary, keypoint), axis=2)
+        # input = np.concatenate((dicom, empty, keypoint), axis=2)
 
         output = cv2.imread(output_path, cv2.IMREAD_UNCHANGED)
         output = cv2.resize(output, (SIZE, SIZE), interpolation=cv2.INTER_NEAREST)
@@ -62,12 +66,12 @@ transform = transforms.Compose([
 ])
 
 train_dicom_dir = '../images/images_right/images_train/input_dicom'
-train_binary_dir = '../images/images_right/images_train/input'
+train_binary_dir = '../images/images_right/images_train/binary'
 train_keypoint_dir = '../images/images_right/images_train/keypoints'
 train_output_dir = '../images/images_right/images_train/output'
 
 val_dicom_dir = '../images/images_right/images_val/input_dicom'
-val_binary_dir = '../images/images_right/images_val/input'
+val_binary_dir = '../images/images_right/images_val/binary'
 val_keypoint_dir = '../images/images_right/images_val/keypoints'
 val_output_dir = '../images/images_right/images_val/output'
 
@@ -163,10 +167,10 @@ model = UNet(dropout_rate=0.3)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=2.4e-4)
+optimizer = optim.Adam(model.parameters(), lr=1.6e-4)
 
 train_model(model, train_loader, val_loader, criterion, optimizer,
-            "model_right_2", num_epochs=100, early_stopping=4)
+            "model_right_5", num_epochs=170, early_stopping=4)
 
 
 starting_epoch = 3
@@ -206,5 +210,5 @@ plt.xlabel('Epoch')
 plt.ylabel('Loss, Acc')
 plt.legend()
 plt.title('Training and Validation Loss, Acc')
-plt.savefig('loss_plot_right_2.png')
+plt.savefig('loss_plot_right_5.png')
 plt.show()
