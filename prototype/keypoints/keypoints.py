@@ -203,7 +203,7 @@ def find_keypoints_on_graph(
                     if (cross_begin1, cross_end1) in crossings_connected:
                         crossings_connected.remove((cross_begin1, cross_end1))
 
-    print(f"Possible: {crossings_connected}")
+    # print(f"Possible: {crossings_connected}")
 
     filtered_branchpoints = [
         branchpoint

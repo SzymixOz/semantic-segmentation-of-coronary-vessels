@@ -12,6 +12,7 @@ from binary_segmentation.skrypt import process_dicom_image
 from keypoints.keypoints import get_keypoints
 from semantic_segmentation.predict import predict
 from semantic_segmentation.converter_RGB import get_colored_mask_with_legend
+from save_result import save_result_as_csv
 
 
 SIZE = 256
@@ -73,13 +74,13 @@ class SegmentationApp:
         # Load and display the uploaded image
         self.loaded_image = cv2.imread(file_path)
         resized_image = cv2.resize(self.loaded_image, (SIZE, SIZE))
-        resized_image_rgb = cv2.cvtColor(resized_image, cv2.COLOR_BGRA2RGB)
-        self.photo1 = ImageTk.PhotoImage(Image.fromarray(resized_image_rgb))
+        image_rgb = cv2.cvtColor(self.loaded_image, cv2.COLOR_BGRA2RGB)
+        self.photo1 = ImageTk.PhotoImage(Image.fromarray(resized_image))
         self.image_label1.config(image=self.photo1)
         self.image_label1.image = self.photo1
 
         # Perform side recognition in a separate thread
-        Thread(target=self.run_side_recognition, args=(resized_image_rgb,)).start()
+        Thread(target=self.run_side_recognition, args=(image_rgb,)).start()
 
     def run_side_recognition(self, image):
         self.show_processing_message("Performing side recognition...")
@@ -125,18 +126,20 @@ class SegmentationApp:
         binary_mask = self.binary_mask
         keypoints = get_keypoints(binary_mask)
         segmentation_result = self.run_prediction(self.loaded_image, binary_mask, keypoints)
-        self.display_results(segmentation_result)
+        self.display_and_save_results(segmentation_result)
 
         self.hide_processing_message()
 
     def run_prediction(self, img, binary_mask, keypoints):
         """Run the semantic segmentation prediction using UNet model."""
-        model_name = 'model_right_5' if self.recognized_side else 'model_left_2'
+        model_name = 'model_right' if self.recognized_side else 'model_left'
         return predict(img, binary_mask, keypoints, model_name)
 
-    def display_results(self, segmentation_result):
+    def display_and_save_results(self, segmentation_result):
         """Display the results of the segmentation."""
         result_with_legend = get_colored_mask_with_legend(segmentation_result)
+        save_result_as_csv(segmentation_result, "results/segmentation_mask.csv")
+        cv2.imwrite("results/segmentation_result.png", cv2.cvtColor(result_with_legend, cv2.COLOR_RGB2BGR))
         self.photo2 = ImageTk.PhotoImage(Image.fromarray(result_with_legend))
         self.image_label2.config(image=self.photo2)
         self.image_label2.image = self.photo2

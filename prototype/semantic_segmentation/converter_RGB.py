@@ -5,7 +5,7 @@ from matplotlib.patches import Patch
 from io import BytesIO
 
 
-SEGMENT_NAMES={
+SEGMENT_NAMES = {
     '1': "RCA proximal",
     '2': "RCA mid",
     '3': "RCA distal",
@@ -103,7 +103,7 @@ def generate_legend(mask, segment_names, segment_colors, colors_dict):
     unique_values = np.unique(mask)  # Znalezienie unikalnych wartości w masce
     legend_items = []
 
-    print("Unique values in mask:", unique_values)
+    # print("Unique values in mask:", unique_values)
     for value in unique_values:
         # Znajdź segment ID na podstawie `segment_colors`
         segment_id = next((key for key, val in segment_colors.items() if value in val), None)
@@ -190,6 +190,7 @@ def get_colored_mask_with_legend(mask):
     np_image = np.frombuffer(buffer.getvalue(), dtype=np.uint8)  # Odczytaj zawartość jako bajty
     buffer.close()  # Zamknij strumień
     cv_image = cv2.imdecode(np_image, cv2.IMREAD_COLOR)  # Dekoduj obraz jako format kolorowy BGR
+    
 
     # Zwróć obraz w formacie OpenCV
     return cv_image
