@@ -93,18 +93,16 @@ def get_data(data, voting, images_path, labeling = True):
     segmentations = []
     filenames = []
     labels = []
-
+    data=data[data['side'] == 'UNKNOWN']
+    print(data)
     print("GETTING DATA...")
     for filename in os.listdir(images_path):
-        
-
         split = filename.index('_')
         image_id = filename[0:split]
         frame = filename[split + 1:-4]
 
         if data.loc[(data['image_id'] == image_id) & (data['frame'] == int(frame))].empty:
             continue
-        
         filenames.append(filename.split(".")[0])
 
         if voting == False:
@@ -151,7 +149,7 @@ def color_segments(mask, label, segment_colors):
         else:
             # in case we dont have certain color for segment (it should not be 0 because it is black color)
             color = '14'
-            
+
         for channel in range(0, 3):
             colored_mask[it.multi_index[0], it.multi_index[1], channel] = float(segment_colors[color][channel])
 
@@ -173,7 +171,7 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
     #                  13: "Distal circumflex artery", 14: "Left posterolateral", 15: "Posterior descending",
     #                  99: "Unknown"}
     # print np unique mask
-    print(np.unique(mask))
+    # print(np.unique(mask))
     segment_namess={
         '1': "RCA proximal",
         '2': "RCA mid",
@@ -231,7 +229,7 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
         '16b':  [100, 100, 100], # grey
         '16c':  [200, 200, 200], # grey
         '99': [255, 255, 255],  # white 
-        '22': [255, 255, 0], # yellow 
+        '22': [255, 255, 0], # yellow
         '255': [255, 255, 255] # white TODO check if any of these are in any of segmentations
     }
 
@@ -251,15 +249,15 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
 
     result = mask_color / 255.0 if ground_truth else cv2.addWeighted(mask_color, mask_intensity, img_color, img_intensity, 0, img_color)
     #result = cv2.addWeighted(mask_color, mask_intensity, img_color, img_intensity, 0, img_color)
-    print(np.unique(mask_color))
+    # print(np.unique(mask_color))
     if not np.unique(mask).shape[0] < 3 and label:
         segments = np.unique(mask).tolist()[1:]
-        print(segments)
+        # print(segments)
         handles = []
         for segment in segments:
             # if segment not in segment_names.keys():
                 # continue
-            print(label.get(segment), segment)
+            # print(label.get(segment), segment)
             if label.get(segment)=='null' or label.get(segment) is None:
                 continue
             c = segment_colors[label.get(segment)]
@@ -286,7 +284,7 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
     if name is not None:
         if binary:
             mask_color = cv2.cvtColor(mask_color, cv2.COLOR_RGB2GRAY)
-            print(mask_color.shape)
+            # print(mask_color.shape)
             cv2.imwrite(f'./{folder_name}/{name}.png', mask_color)
         else:
             cv2.imwrite(f'./{folder_name}/{name}.png', cv2.cvtColor(mask_color, cv2.COLOR_RGB2BGR))
@@ -313,7 +311,7 @@ def get_mask(img, mask, label, binary=False, name=None, folder_name='image', img
         # # Save the image
         # pil_img.save(f'./images/{name}.png')
     plt.close()
-    
+
     return result
 
 def simple_test():
@@ -322,7 +320,7 @@ def simple_test():
     images, segmentations, filenames, labels = get_data(data, voting=False, images_path='./images', labeling=True)
     get_mask(images[0], segmentations[0], labels[0], name=filenames[0], folder_name='gt', binary=False, ground_truth=True)
 
-    
+
     images_voting, segmentations_voting, filenames_voting, labels_voting = get_data(data, voting=True, images_path='./images', labeling=True)
     get_mask(images_voting[0], segmentations_voting[0], labels_voting[0], name=filenames_voting[0], folder_name='bin', binary=True, ground_truth=True)
 
@@ -335,7 +333,7 @@ def save_images():
         clear_output(wait=True)
         break;
 
-    
+
     images2, segmentations2, filenames2, labels2 = get_data(data, voting=False, images_path='./images')
     for i, (image, seg, filename, label) in enumerate(zip(images2, segmentations2, filenames2, labels2)):
         get_mask(images2[i], segmentations2[i], labels2[i], name=filenames2[i], folder_name='gt', binary=False, ground_truth=True)
@@ -345,14 +343,15 @@ def save_images():
 def test_for_new_df():
     data = pd.read_csv('new_df.csv', sep=',')
 
-    images, segmentations, filenames = get_data(data, voting=False, images_path='./images', labeling=False)
-    get_mask(images[0], segmentations[0], None, name=filenames[0], folder_name='gt_new_df', binary=False, ground_truth=True)
+    # images, segmentations, filenames = get_data(data, voting=False, images_path='./images', labeling=False)
+    # get_mask(images[0], segmentations[0], None, name=filenames[0], folder_name='gt_new_df', binary=False, ground_truth=True)
 
     images2, segmentations2, filenames2 = get_data(data, voting=True, images_path='./images', labeling=False)
-    get_mask(images2[0], segmentations2[0], None, name=filenames2[0], folder_name='bin_new_df', binary=True, ground_truth=True)
+    for i, (image, seg, filename) in enumerate(zip(images2, segmentations2, filenames2)):
+        get_mask(images2[i], segmentations2[i], None, name=filenames2[i], folder_name='unknown_side_new_df', binary=True, ground_truth=True)
 
 if __name__ == "__main__":
-    simple_test()
+    # simple_test()
     test_for_new_df()
     # save_images()
-    
+
